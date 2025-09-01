@@ -9,8 +9,6 @@ import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
-from shops_processing import shops_moscow
-
 
 @contextlib.contextmanager
 def browser_driver():
@@ -25,6 +23,7 @@ def browser_driver():
 class Shop:
     address: str
     browser: selenium.webdriver.chrome.webdriver.WebDriver
+
     def __init__(self, address: str):
         self.address = address
 
@@ -36,21 +35,30 @@ class Shop:
             search_map = browser.find_element(By.CSS_SELECTOR, '[data-test-id="map-button"]')
             search_map.click()
             search_choose = browser.find_elements(By.CSS_SELECTOR, '[data-test-id="v-button-base"]')
-            # if (len(search_choose) > 1) and (search_choose[1].is_displayed()):
-            #     search_choose[1].click()
+            if (len(search_choose) > 1) and (search_choose[1].is_displayed()):
+                search_choose[1].click()
+            input_shop = browser.find_elements(By.CLASS_NAME, 'pl-input-field')
+            input_shop[2].send_keys(self.address)
+            # check = browser.find_elements(By.CSS_SELECTOR, '[data-test-id="v-chip-control"]')
+            # check[1].click()
 
         elif len(browser.find_elements(By.CSS_SELECTOR, '[data-test-id="v-top-navigation"]')) == 0:
             search_map = browser.find_element(By.CSS_SELECTOR, '[data-test-id="map-button"]')
             search_map.click()
 
-        input_shop = browser.find_elements(By.CLASS_NAME, 'pl-input-field')
-        input_shop[1].send_keys(self.address)
+        if len(search_cookie) == 0:
+            input_shop = browser.find_elements(By.CLASS_NAME, 'pl-input-field')
+            input_shop[1].send_keys(self.address)
         print(self.address)  # temporary
         time.sleep(1)
         if len(browser.find_elements(By.CLASS_NAME, 'pl-empty-state.pl-shop-select-shop-list-empty')) != 0:
             print("shop not found")
-            input_shop[1].send_keys(Keys.CONTROL + "a")
-            input_shop[1].send_keys(Keys.DELETE)
+            if len(search_cookie) == 0:
+                input_shop[1].send_keys(Keys.CONTROL + "a")
+                input_shop[1].send_keys(Keys.DELETE)
+            else:
+                input_shop[2].send_keys(Keys.CONTROL + "a")
+                input_shop[2].send_keys(Keys.DELETE)
             return False
         else:
             search_choose_shop = browser.find_elements(By.CLASS_NAME,
@@ -58,7 +66,7 @@ class Shop:
             if (len(search_choose_shop) > 1) and (search_choose_shop[1].is_displayed()):
                 search_choose_shop[1].click()
             else:
-                print("retry for this shop")
+                print("retry for this shop")  # to do: add for the first shop as well
                 input_shop = browser.find_elements(By.CLASS_NAME, 'pl-input-field')
                 if (len(input_shop) > 1) and (input_shop[1].is_displayed()):
                     input_shop[1].send_keys(Keys.CONTROL + "a")
@@ -92,16 +100,23 @@ class ShopSet:
                 shop_list.append(address)
         return shop_list
 
-# class Printer(abc.ABC):
-    # @abc.abstractmethod
-    # def print(self) -> None:
-        #raise NotImplementedError()
+
+class Printer(abc.ABC):
+    @abc.abstractmethod
+    def display(self, result: list[str]) -> None:
+        raise NotImplementedError()
 
 
-# class ConsolePrinter(Printer):
+class ConsolePrinter(Printer):
 
-    #def print(self) -> None:
-        #pass
+    def display(self, result: list[str]) -> None:
+        print(f"Found {len(result)} shops with that product")
+        print("The addresses of the shops are:", *result, sep="\n")
+
+
+def get_all_shops() -> set[str]:
+    with open("shops_moscow.txt", "r", encoding='utf-8') as file:
+        return set([shop.strip() for shop in file.readlines()])
 
 
 def create_cli():
@@ -112,10 +127,11 @@ def create_cli():
     return parser.parse_args()
 
 
-if __name__ == "main":
-    with browser_driver() as browser:
-        args = create_cli()
-        found = ShopSet(shops_moscow).get_shop_list(args.unit)
-        print("Found", len(found), "shops with that product")
-        print("The addresses of the shops are:", *found, sep="\n")
-
+with browser_driver() as browser:
+    start = time.time()
+    args = create_cli()
+    shops_moscow = get_all_shops()
+    found = ShopSet(shops_moscow).get_shop_list(args.unit)
+    cprinter = ConsolePrinter()
+    cprinter.display(found)
+    print("Execution time in seconds:", time.time() - start)

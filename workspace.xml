@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7d2b331e-bba2-478d-980c-ea040e0a0918" name="Changes" comment="state with kinda working main part and problems with console" />
+    <list default="true" id="7d2b331e-bba2-478d-980c-ea040e0a0918" name="Changes" comment="state with kinda working main part and problems with console">
+      <change afterPath="$PROJECT_DIR$/shops_moscow.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shops_processing.py" beforeDir="false" afterPath="$PROJECT_DIR$/shops_processing.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
